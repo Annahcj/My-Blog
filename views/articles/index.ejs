@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div class="container">
+      <h1 class="mb-4 my-3">Blog Articles</h1>
+      <a href="articles/new" class="btn btn-success">New Article</a>
+      <input type="text" placeholder="search..." class="mx-5 search-bar">
+    </div>
+    <% articles.forEach(article => { %>
+        <div class="card mt-4 mx-3 outer">
+            <div class="card-body">
+                <h4 class="card-title"><%= article.title %></h4>
+                <div>
+                    <div class="card-subtitle text-muted mb-2 d-inline">
+                        <%= article.createdAt.toLocaleDateString() %>
+                    </div>
+                    <div class="card-subtitle mx-2 d-inline">
+                        <%= article.views %> views
+                    </div>
+                    <div class="card-subtitle d-inline">
+                        <%= article.likes %> likes
+                    </div>
+                </div>
+                <div class="card-text my-2"><%= article.description %> </div>
+                <a href="articles/<%= article.slug %>" class="btn btn-primary">Read More</a>
+                <a href="articles/edit/<%= article.id %>" class="btn btn-info">Edit</a>
+                <form action="/articles/<%= article.id %>?_method=DELETE" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    <% }) %>
+    <style>
+        .outer {
+            border-left: 5px solid rgb(116, 116, 155);
+        }
+    </style>
+    <script>
+        const searchbar = document.querySelector('.search-bar');
+        searchbar.addEventListener('input', () => {
+           let text = searchbar.value;
+           text = text.toLowerCase();
+           let blogs = document.getElementsByClassName('outer');
+           for (var blog of blogs) {
+            let title = blog.querySelector('.card-title').innerText;
+            title = title.toLowerCase();
+
+            if (kmp(title, text) > -1) {
+                blog.style.display = '';
+            } else {
+                blog.style.display = 'none';
+            }
+
+            function kmp(str, subStr) {
+            let n = str.length, m = subStr.length;
+            if (m === 0) return 0;
+            let lps = computeLPS(subStr);
+            let i = 0, j = 0;
+            while (i < n) {
+                if (str[i] === text[j]) {
+                i++, j++;
+                if (j === m) return i - m;
+                } else {
+                if (j !== 0) j = lps[j - 1];
+                else i++;
+                }
+            }
+            return -1;
+            }
+            function computeLPS(str) {
+            let m = str.length;
+            let lps = Array(m).fill(0);
+            let pre = 0, suff = 1;
+            while (suff < m) {
+                if (str[pre] === str[suff]) {
+                pre++;
+                lps[suff] = pre;
+                suff++;
+                } else {
+                if (pre !== 0) pre = lps[pre - 1];
+                else suff++;
+                }
+            }
+            return lps;
+            }
+           }
+        })
+    </script>
+</body>
+</html>

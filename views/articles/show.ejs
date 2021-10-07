@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog</title>
+</head>
+<body>
+    <div class="container">
+      <h1 class="my-3"><%= article.title %></h1>
+      <div class="mb-2">
+        <div class="text-muted d-inline"><%= article.createdAt.toLocaleDateString() %></div>
+        <div class="mx-2 d-inline"><%= article.views %> views</div>
+        <div class="d-inline"><%= article.likes %> likes</div>
+          <i class="material-icons d-inline fav" data-id="<%= article.id %>">favorite_border</i>
+      </div>
+      <a href="/" class="btn btn-secondary">All Articles</a>
+      <a href="/articles/edit/<%= article.id %>" class="btn btn-info">Edit</a>
+      <div class="mt-5">
+        <%- article.sanitizedHtml %>
+      </div>
+    </div>
+    <script>
+      const fav = document.querySelector('.fav');
+      fav.addEventListener('click', () => {
+        let id = fav.dataset.id;
+        if (fav.innerText === 'favorite_border') {
+          let endpoint = `/articles/${id}/fav`;
+          fetch(endpoint, {
+            method: 'PUT'
+          })
+          .then(res => {
+            fav.innerText = 'favorite';
+          })
+          .catch(err => {
+            console.log(err)
+          })
+        } else {
+          let endpoint = `/articles/${id}/unfav`;
+          fetch(endpoint, {
+            method: 'PUT'
+          })
+          .then(res => {
+            fav.innerText = 'favorite_border';
+          })
+          .catch(err => {
+            console.log(err)
+          })
+        }
+      })
+    </script>
+</body>
+</html>
