@@ -31,6 +31,4 @@ app.get('/', async (req, res) => {
 
 app.use('/articles', articleRouter);
 
-// new comment
-// I learnt python today!
-// javascript!
+// new change
