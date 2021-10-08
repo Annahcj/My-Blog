@@ -7,6 +7,8 @@ const articleRouter = require('./routes/articles');
 
 mongoose.connect('mongodb+srv://user123:test987@cluster0.lodca.mongodb.net/markdown-blog?retryWrites=true&w=majority', { useNewURLParser: true, useUnifiedTopology: true })
 
+// A new comment 
+
 let blog = [];
 Article.find()
   .then(res => {
@@ -30,3 +32,5 @@ app.get('/', async (req, res) => {
 app.use('/articles', articleRouter);
 
 // new comment
+// I learnt python today!
+// javascript!
