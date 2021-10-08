@@ -7,7 +7,7 @@ const articleRouter = require('./routes/articles');
 
 mongoose.connect('mongodb+srv://user123:test987@cluster0.lodca.mongodb.net/markdown-blog?retryWrites=true&w=majority', { useNewURLParser: true, useUnifiedTopology: true })
 
-// another new comment
+// deleted middle comment, added new comment
 
 let blog = [];
 Article.find()
