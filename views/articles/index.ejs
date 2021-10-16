@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="stylesheet"
+          href=
+"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
@@ -11,7 +14,14 @@
     <div class="container">
       <h1 class="mb-4 my-3">Blog Articles</h1>
       <a href="articles/new" class="btn btn-success">New Article</a>
-      <input type="text" placeholder="search..." class="mx-5 search-bar">
+
+        <div class="input-icon my-4">
+            <i class="fa fa-search icon"></i>
+        <input type="text" placeholder="" class="search-bar" list="auto-search-input">
+        </div>
+        <datalist id="auto-search-input" class="auto-search">
+
+        </datalist>
     </div>
     <% articles.forEach(article => { %>
         <div class="card mt-4 mx-3 outer">
@@ -38,15 +48,202 @@
         </div>
     <% }) %>
     <style>
+        input[type=text] {
+            border-radius: 4px;
+            border: 1px solid rgb(200, 200, 200);
+            padding: 10px 10px 10px 45px;
+            width: 350px;
+        }
+        input[type=text]:focus, input[type=text]:hover {
+            outline: none;
+            border: none;
+            box-shadow: 1px 1px 4px grey;
+        }
         .outer {
             border-left: 5px solid rgb(116, 116, 155);
         }
+        /* this is meant to remove arrow from datalist, not working */
+        input::-webkit-calendar-picker-indicator {
+	        display: none;
+        }
+        .icon {
+            position: absolute;
+            top: 0;
+            left: 0; 
+            display: flex;
+        }
+        .input-icon {
+            position: relative;
+        }
+        .input-icon i {
+            position: absolute;
+            left: 0;
+            top: 15px;
+            display: flex;
+            padding-left: 15px;
+        }
     </style>
     <script>
+
+
+class MinHeap {
+  constructor(comparator = (a, b) => a - b) {
+    this.values = [];
+    this.comparator = comparator;
+  }
+  add(val) {
+    this.values.push(val);
+    let idx = this.values.length - 1;
+    let parentIdx = Math.floor((idx - 1) / 2);
+    while (parentIdx >= 0 && this.comparator(this.values[idx], this.values[parentIdx]) > 0) { 
+      [this.values[parentIdx], this.values[idx]] = [this.values[idx], this.values[parentIdx]];
+      idx = parentIdx;
+      parentIdx = Math.floor((idx - 1) / 2);
+    }
+    return val;
+  }
+  remove() {
+    if (!this.values.length) return -1;
+    if (this.values.length === 1) return this.values.pop();
+    let value = this.values[0];
+    let popped = this.values.pop();
+    this.values[0] = popped;
+    let idx = 0;
+    let leftIdx = idx * 2 + 1, rightIdx = idx * 2 + 2;
+    let childIdx = getChild(this.values, leftIdx, rightIdx, this.comparator);
+    function getChild(vals, leftIdx, rightIdx, comparator) {
+      let end = vals.length - 1;
+      if (leftIdx > end && rightIdx > end) return -1;
+      if (rightIdx > end) return leftIdx;
+      if (comparator(vals[leftIdx], vals[rightIdx]) > 0) return leftIdx;
+      return rightIdx;
+    }
+    while (childIdx > -1 && this.comparator(this.values[idx], this.values[childIdx]) < 0) {
+      [this.values[idx], this.values[childIdx]] = [this.values[childIdx], this.values[idx]];
+      idx = childIdx;
+      leftIdx = idx * 2 + 1, rightIdx = idx * 2 + 2;
+      childIdx = getChild(this.values, leftIdx, rightIdx, this.comparator);
+    }
+    return value;
+  }
+}
+
+var TrieNode = function(char) {
+  this.char = char;
+  this.children = {};
+  this.wordEnd = false;
+}
+
+var AutocompleteSystem = function(sentences, times) {
+  this.root = new TrieNode(null);
+  this.freq = {};
+  this.currInput = '';
+
+  for (var i = 0; i < sentences.length; i++) {
+    this.insert(sentences[i]);
+    this.freq[sentences[i]] = times[i];
+  }  
+};
+
+AutocompleteSystem.prototype.insert = function(word) {
+  let curr = this.root;
+  for (var char of word) {
+    curr = curr.children;
+    if (!curr[char]) curr[char] = new TrieNode(char);
+    curr = curr[char];
+  }
+  curr.wordEnd = true;
+}
+
+AutocompleteSystem.prototype.search = function(word) {
+  let res = [];
+  let curr = this.root;
+  for (var char of word) {
+    curr = curr.children;
+    if (!curr[char]) return [];
+    curr = curr[char];
+  }
+  dfs(curr, word);
+  return res;
+
+  function dfs(currNode, currWord) {
+    if (currNode.wordEnd) {
+      res.push(currWord);
+    }
+    currNode = currNode.children;
+    for (var key in currNode) {
+      dfs(currNode[key], currWord + key);
+    }
+  }
+}
+
+AutocompleteSystem.prototype.input = function(c) {
+  if (c === '#') {
+    this.insert(this.currInput);
+    this.freq[this.currInput] = (this.freq[this.currInput] || 0) + 1;
+    this.currInput = '';
+    return [];
+  } else {
+    this.currInput = c;
+    let words = this.search(this.currInput);
+    let minHeap = new MinHeap((a, b) => {
+      if (this.freq[a] === this.freq[b]) {
+        return a > b ? 1 : -1;
+      } 
+      return this.freq[b] - this.freq[a];
+    });
+    for (var word of words) {
+      minHeap.add(word);
+      if (minHeap.values.length > 7) minHeap.remove();
+    }
+    let res = [];
+    let maxWords = Math.min(7, minHeap.values.length);
+    for (var i = 0; i < maxWords; i++) {
+      res.unshift(minHeap.remove());
+    }
+    return res;
+  }
+};
+
+        // retrieve sentences and times from localStorage
+        let sentences = JSON.parse(localStorage.getItem('sentences')) || [];
+        let times = JSON.parse(localStorage.getItem('times')) || [];
+        
+        let autoComplete = new AutocompleteSystem(sentences, times);
+        console.log(autoComplete)
         const searchbar = document.querySelector('.search-bar');
-        searchbar.addEventListener('input', () => {
+        const autoSearch = document.querySelector('.auto-search');
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            autoComplete.input('#');
+          }
+        })
+        searchbar.addEventListener('input', (e) => {
+
            let text = searchbar.value;
            text = text.toLowerCase();
+           
+            let searchWords = autoComplete.input(text);
+            console.log(searchWords, 'searchWords')
+            autoSearch.innerHTML = '';
+            for (var word of searchWords) {
+                autoSearch.innerHTML += `
+                    <option value="${word}"></option>
+                `
+            }
+
+           // get the words and their frequencies from autoComplete.freq
+           sentences = [];
+           times = [];
+           for (var sentence in autoComplete.freq) {
+              sentences.push(sentence);
+              times.push(autoComplete.freq[sentence]);
+           }
+           // save sentences and their freq in localStorage 
+           localStorage.setItem('sentences', JSON.stringify(sentences));
+           localStorage.setItem('times', JSON.stringify(times));
+
+
            let blogs = document.getElementsByClassName('outer');
            for (var blog of blogs) {
             let title = blog.querySelector('.card-title').innerText;
@@ -92,6 +289,7 @@
             }
            }
         })
+
     </script>
 </body>
 </html>
