@@ -5,19 +5,14 @@ const app = express();
 const Article = require('./models/article');
 const articleRouter = require('./routes/articles');
 
-mongoose.connect('mongodb+srv://user123:test987@cluster0.lodca.mongodb.net/markdown-blog?retryWrites=true&w=majority', { useNewURLParser: true, useUnifiedTopology: true })
+const mongoURI = require('./config/keys.js').mongoURI;
+mongoose.connect(mongoURI, {
+  useNewURLParser: true, 
+  useUnifiedTopology: true
+})
+.then(() => console.log('MongoDB Connected'))
+.catch(err => console.log(err));
 
-// deleted middle comment, added new comment
-
-let blog = [];
-Article.find()
-  .then(res => {
-    blog = res;
-    console.log(res, blog, 'hello')
-  })
-  .catch(err => {
-    console.log(err)
-  })
 app.listen(5000);
 
 app.set('view engine', 'ejs');
